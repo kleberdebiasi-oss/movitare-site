@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Símbolo Movitare">
+  <rect width="200" height="200" rx="48" fill="#1F5C5B"/>
+  <path d="M55 62C98 18 145 56 116 98C94 129 66 145 48 171" fill="none" stroke="#C5A66A" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="104" cy="49" r="12" fill="#C5A66A"/>
+</svg>
