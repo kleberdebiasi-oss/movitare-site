@@ -47,23 +47,64 @@ document.querySelectorAll('#menu a').forEach(link => link.addEventListener('clic
 }));
 const dateInput = document.querySelector('input[type="date"]');
 if (dateInput) {
-  const now = new Date();
-  dateInput.min = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  dateInput.min = new Intl.DateTimeFormat('sv-SE', { timeZone: 'America/Sao_Paulo' }).format(new Date());
 }
-document.getElementById('contact-form')?.addEventListener('submit', event => {
-  event.preventDefault();
-  const form = event.currentTarget;
-  if (!form.reportValidity()) return;
-  const data = new FormData(form);
-  const message = `Nome: ${data.get('nome')}\nE-mail: ${data.get('email')}\n\n${data.get('mensagem')}`;
-  window.location.href = `mailto:kleberdebiasi@gmail.com?subject=${encodeURIComponent('Contato pelo site Movitare')}&body=${encodeURIComponent(message)}`;
-  form.querySelector('[role="status"]').textContent = 'Confirme o envio no seu aplicativo de e-mail. Se ele não abrir, use o link do WhatsApp ao lado.';
+
+document.querySelectorAll('form[data-api]').forEach(form => {
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    const button = form.querySelector('button[type="submit"]');
+    if (button.disabled || !form.reportValidity()) return;
+
+    const status = form.querySelector('[role="status"]');
+    button.disabled = true;
+    status.textContent = 'Enviando…';
+    try {
+      const response = await fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+      });
+      const result = await response.json();
+      status.textContent = result.mensagem;
+      if (response.ok) form.reset();
+    } catch {
+      status.textContent = 'Não foi possível confirmar o envio. Confira a conexão.';
+    } finally {
+      button.disabled = false;
+    }
+  });
 });
-document.getElementById('quote-form')?.addEventListener('submit', event => {
-  event.preventDefault();
-  const form = event.currentTarget;
-  if (!form.reportValidity()) return;
-  const d = new FormData(form);
-  const message = `Olá! Gostaria de solicitar um orçamento para ${form.dataset.service}.\nNome: ${d.get('nome')}\nE-mail: ${d.get('email')}\nTelefone: ${d.get('telefone')}\nEndereço: ${d.get('endereco')}\nCidade: ${d.get('cidade')} / ${d.get('uf')}\nData desejada: ${String(d.get('data')).split('-').reverse().join('/')}\nObservações: ${d.get('observacoes') || 'Nenhuma'}`;
-  window.location.assign(`https://wa.me/5549984330704?text=${encodeURIComponent(message)}`);
-});
+
+const formatoPreco = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
+function criarCartao(servico, modelo) {
+  const cartao = modelo.content.cloneNode(true);
+  cartao.querySelectorAll('a').forEach(link => {
+    link.href = /^servico[0-9]+\.html$/.test(servico.pagina) ? servico.pagina : '#servicos';
+  });
+  cartao.querySelector('.card-img-top').src = 'movitare-assets/' + encodeURIComponent(servico.imagem);
+  cartao.querySelector('.service-icon').src = 'movitare-assets/' + encodeURIComponent(servico.icone);
+  cartao.querySelector('h3').textContent = servico.nome;
+  cartao.querySelector('p').textContent = servico.descricao;
+  cartao.querySelector('.price strong').textContent = formatoPreco.format(Number(servico.preco));
+  return cartao;
+}
+
+async function carregarServicos() {
+  const lista = document.getElementById('services-list');
+  if (!lista) return;
+
+  const status = document.getElementById('services-status');
+  const modelo = document.getElementById('service-template');
+  try {
+    const response = await fetch('api/servicos.php');
+    if (!response.ok) throw new Error('Falha ao consultar serviços.');
+    const { servicos } = await response.json();
+    lista.replaceChildren(...servicos.map(servico => criarCartao(servico, modelo)));
+    status.textContent = servicos.length ? '' : 'Nenhum serviço disponível no momento.';
+  } catch {
+    status.textContent = 'Não foi possível carregar os serviços. Atualize a página para tentar novamente.';
+  }
+}
+
+carregarServicos().then(setupScrollReveal);

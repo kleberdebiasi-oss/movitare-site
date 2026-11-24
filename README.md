@@ -1,29 +1,26 @@
 # Movitare Fisioterapia
 
-Site acadêmico responsivo em HTML, CSS, JavaScript e Bootstrap 5.3.8. Abra `index.html` no navegador. Os arquivos da raiz estão prontos para hospedagem estática no GitHub Pages, sem compilação.
+Projeto da Avaliação A1.3 de Fundamentos ao Desenvolvimento Web, por Kleber Augusto de Biasi. O site usa HTML, Bootstrap, JavaScript, PHP e MySQL ou MariaDB.
 
-## Conteúdo
+## Executar no XAMPP
 
-- Página principal: carrossel, quatro serviços com preços, história, cinco depoimentos, endereço com mapa e formulário de contato.
-- `servico1.html` a `servico4.html`: detalhes, duas fotos diferentes, tabela, vídeo do YouTube, perguntas frequentes e modal de orçamento com todos os campos solicitados.
-- Bootstrap incluído em `vendor`. Mapa, vídeo e serviços de contato precisam de internet.
-- Todas as imagens originais são utilizadas, inclusive o favicon e a imagem de compartilhamento.
-- Contato abre o aplicativo de e-mail. Orçamento abre o WhatsApp com os campos preenchidos; o visitante confirma o envio. Sem banco de dados ou envio automático.
+1. No painel do XAMPP, inicie **Apache** e **MySQL**.
+2. Copie a pasta `movitare-site` para `C:\xampp\htdocs\`.
+3. Abra `http://localhost/phpmyadmin/`, vá em **Importar** e selecione `banco/movitare.sql`. A exportação do phpMyAdmin cria o banco `movitare` com três tabelas e os quatro serviços iniciais. Importe em um banco novo.
+4. Abra `http://localhost/movitare-site/`.
 
-## Dados a confirmar
+A conexão em `api/conexao.php` usa as configurações locais padrão do XAMPP (`127.0.0.1:3306`, usuário `root`, senha vazia). Se a sua instalação for diferente, defina as variáveis de ambiente `MOVITARE_DB_HOST`, `MOVITARE_DB_PORT`, `MOVITARE_DB_NAME`, `MOVITARE_DB_USER` e `MOVITARE_DB_PASSWORD` conforme necessário.
 
-- Nome completo do desenvolvedor no rodapé.
-- Bairro, CEP, cidade e estado. O mapa pesquisa o endereço parcial fornecido e não confirma a localização da clínica.
-- Preços, horários e história são exemplos acadêmicos. Os cinco depoimentos são fictícios e usam a foto ilustrativa disponível, sem representar pacientes reais.
-- Nome profissional e CREFITO não foram fornecidos e não foram inventados.
-- A avaliação pede publicação no GitHub Pages. A publicação e o envio do link ao portal não foram realizados automaticamente.
+Com PHP e MySQL/MariaDB já instalados, outra forma de iniciar o site após importar o banco é rodar `php -S 127.0.0.1:8000` na raiz do projeto e abrir `http://127.0.0.1:8000/`. O PHP precisa da extensão `pdo_mysql`.
 
-## GitHub Pages
+## Roteiro para a apresentação
 
-Envie `index.html`, os quatro arquivos `servico*.html` e as pastas `css`, `js`, `vendor` e `movitare-assets` para um repositório. Em Settings → Pages, escolha Deploy from a branch, a branch utilizada e a pasta raiz. A pasta `site` contém o ambiente Vite para prévia local e geração de uma versão estática. Não envie `node_modules`. Para iniciar a prévia: `cd site` e `npm run dev`.
+| Seção | Fluxo | Como conferir |
+| --- | --- | --- |
+| Serviços | A página inicial faz um `GET` em `api/servicos.php`. O PHP executa um `SELECT` em `servicos`, e o JavaScript monta os cartões com o JSON recebido. | Edite a descrição de um serviço no phpMyAdmin e recarregue a página inicial. |
+| Contato | O formulário envia um `POST` para `api/contatos.php`. Após validar os campos, o PHP insere a mensagem em `contatos`. | Envie uma mensagem de teste e confira a nova linha em **contatos → Procurar** no phpMyAdmin. |
+| Orçamento | As quatro páginas de serviço enviam um `POST` para `api/orcamentos.php`. A tabela `orcamentos` relaciona o pedido ao serviço pela chave estrangeira `servico_id`. | Abra um serviço, solicite um orçamento com data futura e confira a linha em **orcamentos → Procurar**. |
 
-## Fontes
+Nos dois formulários, `fetch` envia os campos, e o JavaScript mostra a confirmação ou o erro devolvido pelo PHP. Os `INSERT` usam parâmetros via PDO. Para demonstrar a validação do servidor, envie um orçamento com serviço inexistente e confira o retorno HTTP `422`.
 
-Identidade visual e imagens: arquivos fornecidos. Requisitos: FDW 2026.2 - Avaliação A1.1 Parte 2.pdf.
-
-Vídeo de alongamento: https://www.youtube.com/watch?v=lHclUt48T7w, referenciado no PPC de Fisioterapia da Faculdade Einstein de Limeira: https://www.einsteinlimeira.com.br/portal/public/uploads/cursos/grade/1684864404-PPC_Fisioterapia_FIEL.pdf . Reprodução depende da disponibilidade e das permissões do YouTube.
+Os preços, os depoimentos, as fotos e o endereço servem à demonstração acadêmica. Mapa, vídeos e links externos dependem de acesso à internet.
